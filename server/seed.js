@@ -1,4 +1,0 @@
-const init = async() =>{
-
-}
-init();
