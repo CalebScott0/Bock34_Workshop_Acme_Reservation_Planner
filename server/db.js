@@ -67,6 +67,34 @@ const fetchRestaurants = async () => {
   const dbResponse = await client.query(SQL);
   return dbResponse.rows;
 };
+// creates a reservation in the database and returns the created record
+const createReservation = async ({
+  reservation_date,
+  party_count,
+  restaurant_id,
+  customer_id,
+}) => {
+  const SQL = `
+        INSERT INTO reservations(id, reservation_date, party_count, restaurant_id, customer_id) 
+        VALUES($1, $2, $3, $4, $5) RETURNING *;
+    `;
+  const dbResponse = await client.query(SQL, [
+    uuid.v4(),
+    reservation_date,
+    party_count,
+    restaurant_id,
+    customer_id,
+  ]);
+  return dbResponse.rows[0];
+};
+// returns an array of reservations in the database
+const fetchReservations = async() => {
+    const SQL = `
+        SELECT * FROM reservations;
+    `;
+    const dbResponse = await client.query(SQL);
+    return dbResponse.rows;
+}
 
 module.exports = {
   client,
@@ -75,4 +103,6 @@ module.exports = {
   fetchCustomers,
   createRestaurant,
   fetchRestaurants,
+  createReservation,
+  fetchReservations,
 };

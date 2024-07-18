@@ -5,6 +5,8 @@ const {
   fetchCustomers,
   createRestaurant,
   fetchRestaurants,
+  createReservation,
+  fetchReservations,
 } = require("./db");
 
 // function to create database, seed data into tables
@@ -14,7 +16,7 @@ const init = async () => {
   await createTables();
   console.log("Tables created.");
 
-  const [bob, fred, carl] = await Promise.all([
+  const [bob, fred, carl, fogo, vai, mac] = await Promise.all([
     createCustomer({ name: "Bob" }),
     createCustomer({ name: "Fred" }),
     createCustomer({ name: "Carl" }),
@@ -22,7 +24,29 @@ const init = async () => {
     createRestaurant({ name: "Vai's Steakhouse" }),
     createRestaurant({ name: "Macdonalds" }),
   ]);
-  console.log(await fetchCustomers());
-  console.log(await fetchRestaurants());
+  console.log("Customers:", await fetchCustomers());
+  console.log("Restaurants:", await fetchRestaurants());
+
+  const [res1, res2] = await Promise.all([
+    createReservation({
+      reservation_date: "07/20/2024",
+      party_count: 4,
+      restaurant_id: fogo.id,
+      customer_id: bob.id,
+    }),
+    createReservation({
+      reservation_date: "08/12/2024",
+      party_count: 6,
+      restaurant_id: vai.id,
+      customer_id: fred.id,
+    }),
+    createReservation({
+      reservation_date: "08/05/2024",
+      party_count: 3,
+      restaurant_id: mac.id,
+      customer_id: carl.id,
+    }),
+  ]);
+  console.log("Reservations:", await fetchReservations());
 };
 init();
