@@ -4,7 +4,9 @@
   "description": "In this workshop you will be building an RESTFUL API which calls exported methods from another file. We can think of this other file as our data layer.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon server/index.js",
+    "seed": "node server/seed.js"
   },
   "keywords": [],
   "author": "",
