@@ -1,52 +1,83 @@
+// API File
+const express = require("express");
 const {
   client,
-  createTables,
-  createCustomer,
-  fetchCustomers,
-  createRestaurant,
-  fetchRestaurants,
   createReservation,
+  destroyReservation,
+  fetchCustomers,
   fetchReservations,
+  fetchRestaurants,
 } = require("./db");
 
-// function to create database, seed data into tables
-const init = async () => {
-  await client.connect();
-  console.log("Connected to database.");
-  await createTables();
-  console.log("Tables created.");
+// create express server
+const server = express();
+// connect to db pg client
+client.connect();
+// middleware
+server.use(express.json());
 
-  const [bob, fred, carl, fogo, vai, mac] = await Promise.all([
-    createCustomer({ name: "Bob" }),
-    createCustomer({ name: "Fred" }),
-    createCustomer({ name: "Carl" }),
-    createRestaurant({ name: "Fogo de Chao" }),
-    createRestaurant({ name: "Vai's Steakhouse" }),
-    createRestaurant({ name: "Macdonalds" }),
-  ]);
-  console.log("Customers:", await fetchCustomers());
-  console.log("Restaurants:", await fetchRestaurants());
+// routes
+// returns array of customers
+server.get("/api/customers", async (req, res, next) => {
+  try {
+    res.send(await fetchCustomers());
+  } catch (error) {
+    next(error);
+  }
+});
+// returns array of restaurants
+server.get("/api/restaurants", async (req, res, next) => {
+  try {
+    res.send(await fetchRestaurants());
+  } catch (error) {
+    next(error);
+  }
+});
+// returns array of reservations
+server.get("/api/reservations", async (req, res, next) => {
+  try {
+    res.send(await fetchReservations());
+  } catch (error) {
+    next(error);
+  }
+});
+/* payload: an object which has a valid restaurant_id, date, and party_count.
+returns the created reservation with a status code of 201 */
+server.post(
+  "/api/customers/:customer_id/reservations",
+  async (req, res, next) => {
+    try {
+      const { customer_id } = req.params;
+      res
+        .status(201)
+        .send(await createReservation({ ...req.body, customer_id }));
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+/* - the id of the reservation to delete and 
+the customer_id is passed in the URL, returns nothing with a status code of 204 */
+server.delete(
+  "/api/customers/:customer_id/reservations/:id",
+  async (req, res, next) => {
+    try {
+      const { customer_id, id } = req.params;
+      await destroyReservation({ customer_id, id });
 
-  const [res1, res2] = await Promise.all([
-    createReservation({
-      reservation_date: "07/20/2024",
-      party_count: 4,
-      restaurant_id: fogo.id,
-      customer_id: bob.id,
-    }),
-    createReservation({
-      reservation_date: "08/12/2024",
-      party_count: 6,
-      restaurant_id: vai.id,
-      customer_id: fred.id,
-    }),
-    createReservation({
-      reservation_date: "08/05/2024",
-      party_count: 3,
-      restaurant_id: mac.id,
-      customer_id: carl.id,
-    }),
-  ]);
-  console.log("Reservations:", await fetchReservations());
-};
-init();
+      res.sendStatus(204);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+// error handling route which returns an object with an error property.
+server.use((err, req, res, next) => {
+  res.status(err.status || 500).send({ error: err.message || err });
+});
+
+// have server listen on port
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server listening on PORT ${PORT}`);
+});
