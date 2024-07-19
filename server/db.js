@@ -24,7 +24,7 @@ const createTables = async () => {
     );
     CREATE TABLE reservations(
         id UUID PRIMARY KEY,
-        reservation_date DATE NOT NULL,
+        date DATE NOT NULL,
         party_count INTEGER NOT NULL,
         restaurant_id UUID REFERENCES restaurants(id) NOT NULL,
         customer_id UUID REFERENCES customers(id) NOT NULL
@@ -69,18 +69,18 @@ const fetchRestaurants = async () => {
 };
 // creates a reservation in the database and returns the created record
 const createReservation = async ({
-  reservation_date,
+  date,
   party_count,
   restaurant_id,
   customer_id,
 }) => {
   const SQL = `
-        INSERT INTO reservations(id, reservation_date, party_count, restaurant_id, customer_id) 
+        INSERT INTO reservations(id, date, party_count, restaurant_id, customer_id) 
         VALUES($1, $2, $3, $4, $5) RETURNING *;
     `;
   const dbResponse = await client.query(SQL, [
     uuid.v4(),
-    reservation_date,
+    date,
     party_count,
     restaurant_id,
     customer_id,
